@@ -1,0 +1,15 @@
+ipykernel
+python-dotenv
+pandas
+sqlalchemy
+psycopg2
+requests
+pydantic
+jupyter
+matplotlib
+torch
+scikit-learn
+optuna
+fastapi
+uvicorn
+numpy<2.0

@@ -1,82 +1,148 @@
 import axios from "axios";
 import path from "path";
 import fs from "fs/promises";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { query } from "../db";
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 
+async function saveGameToDb(gameDetails: any) {
+  const game = {
+    id: gameDetails.steam_appid,
+    name: gameDetails.name,
+    developer: gameDetails.developers?.[0] || null,
+    publisher: gameDetails.publishers?.[0] || null,
+    release_date: gameDetails.release_date?.date || null,
+    genres: gameDetails.genres?.map((g: any) => g.description) || null,
+    tags: gameDetails.categories?.map((c: any) => c.description) || null,
+    platforms: Object.keys(gameDetails.platforms).filter(
+      (p) => gameDetails.platforms[p]
+    ),
+    metascore: gameDetails.metacritic?.score || null,
+    user_reviews: gameDetails.recommendations?.total || null,
+    overall_review: null,
+  };
+
+  const gameInsertQuery = `
+    INSERT INTO games (id, name, developer, publisher, release_date, genres, tags, platforms, metascore, user_reviews, overall_review)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    ON CONFLICT (id) DO UPDATE SET
+      name = EXCLUDED.name,
+      developer = EXCLUDED.developer,
+      publisher = EXCLUDED.publisher,
+      release_date = EXCLUDED.release_date,
+      genres = EXCLUDED.genres,
+      tags = EXCLUDED.tags,
+      platforms = EXCLUDED.platforms,
+      metascore = EXCLUDED.metascore,
+      user_reviews = EXCLUDED.user_reviews;
+  `;
+
+  const priceHistoryInsertQuery = `
+    INSERT INTO price_history (game_id, price, discount_price, discount_percent, is_on_sale)
+    VALUES ($1, $2, $3, $4, $5);
+  `;
+
+  try {
+    await query(gameInsertQuery, [
+      game.id,
+      game.name,
+      game.developer,
+      game.publisher,
+      game.release_date,
+      game.genres,
+      game.tags,
+      game.platforms,
+      game.metascore,
+      game.user_reviews,
+      game.overall_review,
+    ]);
+    console.log(`[DB] ✅ 게임 정보 저장 성공: ${game.name}`);
+
+    if (gameDetails.price_overview) {
+      const price = {
+        game_id: game.id,
+        price: gameDetails.price_overview.initial / 100,
+        discount_price: gameDetails.price_overview.final / 100,
+        discount_percent: gameDetails.price_overview.discount_percent,
+        is_on_sale: gameDetails.price_overview.discount_percent > 0,
+      };
+
+      await query(priceHistoryInsertQuery, [
+        price.game_id,
+        price.price,
+        price.discount_price,
+        price.discount_percent,
+        price.is_on_sale,
+      ]);
+      console.log(`[DB] ✅ 가격 정보 저장 성공: ${game.name}`);
+    }
+  } catch (error) {
+    console.error(`[DB] ❌ 데이터베이스 저장 실패: ${game.name}`, error);
+  }
+}
+
 export async function saveGameData() {
-  console.log("스팀 전체 게임 목록을 가져오는 중...");
-  const apps = await getSteamAppList();
+  const appsToProcess = [
+    { appid: 3240220 },
+    { appid: 227300 },
+    { appid: 394360 },
+    { appid: 3241660 },
+  ];
 
-  console.log(`총 ${apps.length}개의 게임을 찾았습니다.`);
-  const appsToProcess = apps.slice(1000, 1020);
-  console.log(`Processing the first ${appsToProcess.length} games...`);
-
-  const allGamesData: any[] = [];
+  let successCount = 0;
+  let failCount = 0;
 
   for (const app of appsToProcess) {
     const appId = app.appid;
     try {
       const steamResponse = await axios.get(
-        `https://store.steampowered.com/api/appdetails?appids=${appId}`
+        `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=kr`
       );
       const gameData = steamResponse.data;
 
       if (gameData && gameData[appId] && gameData[appId].success) {
         const details = gameData[appId].data;
-        console.log(`- 상세 정보 가져오기 성공: ${details.name}`);
 
-        try {
-          const cheapSharkResponse = await axios.get(
-            `https://www.cheapshark.com/api/1.0/games?steamAppID=${appId}`
-          );
-          details.price_history = cheapSharkResponse.data;
-        } catch (error) {
-          console.error(`  - ${details.name}의 가격 정보 조회를 실패했습니다.`);
-        }
-
-        allGamesData.push(details);
+        console.log(
+          `- ✅ 상세 정보 가져오기 성공: ${details.name} (Type: ${details.type})`
+        );
+        await saveGameToDb(details);
+        successCount++;
       } else {
-        console.log(`- 앱 ID ${appId}의 데이터를 가져오지 못했습니다.`);
+        console.log(
+          `- ❌ 앱 ID ${appId}는 유효하지 않거나 정보를 가져올 수 없습니다.`
+        );
+        failCount++;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
-      console.error(`- 앱 ID ${appId} 처리 중 오류 발생.`);
+      console.error(`- ❌ 앱 ID ${appId} 처리 중 오류 발생.`);
+      failCount++;
     }
   }
 
-  const filePath = path.join(__dirname, "..", "..", "games-data.json");
-  await fs.writeFile(filePath, JSON.stringify(allGamesData, null, 2));
+  const resultMessage = `\n데이터 처리 완료: 총 ${appsToProcess.length}개 중 ${successCount}개 성공, ${failCount}개 실패.`;
+  console.log(resultMessage);
 
-  console.log(
-    `\n데이터 저장 완료: ${allGamesData.length}개의 게임 정보가 ${filePath}에 저장되었습니다.`
-  );
   return {
     success: true,
-    message: "Game data fetched and saved.",
-    count: allGamesData.length,
-    path: filePath,
+    message: resultMessage,
+    total: appsToProcess.length,
+    successCount,
+    failCount,
   };
 }
 
 async function getSteamAppList(): Promise<{ appid: number; name: string }[]> {
-  const apiKey = process.env.STEAM_API_KEY;
-  if (!apiKey) {
-    throw new Error("STEAM_API_KEY가 .env 파일에 없습니다");
-  }
-
   try {
     const response = await axios.get(
-      `https://api.steampowered.com/IStoreService/GetAppList/v1?key=${apiKey}`
+      `https://api.steampowered.com/IStoreService/GetAppList/v1?key=${STEAM_API_KEY}`
     );
 
-    if (response.data && response.data.response && response.data.response.apps)
+    if (response.data?.response?.apps) {
       return response.data.response.apps;
-
+    }
     return [];
   } catch (error) {
     console.error("스팀 앱 목록을 가져오는데 실패했습니다:", error);

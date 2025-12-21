@@ -1,0 +1,100 @@
+{
+  "games": [
+    {
+      "name": "Euro Truck Simulator 2",
+      "appid": 227300
+    },
+    {
+      "name": "Counter-Strike 2",
+      "appid": 730
+    },
+    {
+      "name": "Dota 2",
+      "appid": 570
+    },
+    {
+      "name": "Baldur's Gate 3",
+      "appid": 1086940
+    },
+    {
+      "name": "Stardew Valley",
+      "appid": 413150
+    },
+    {
+      "name": "Hearts of Iron IV",
+      "appid": 394360
+    },
+    {
+      "name": "Grand Theft Auto V",
+      "appid": 271590
+    },
+    {
+      "name": "PUBG: BATTLEGROUNDS",
+      "appid": 578080
+    },
+    {
+      "name": "Apex Legends",
+      "appid": 1172470
+    },
+    {
+      "name": "HELLDIVERS 2",
+      "appid": 553850
+    },
+    {
+      "name": "The Witcher 3: Wild Hunt",
+      "appid": 292030
+    },
+    {
+      "name": "ELDEN RING",
+      "appid": 1245620
+    },
+    {
+      "name": "Terraria",
+      "appid": 105600
+    },
+    {
+      "name": "Sid Meier's Civilization VI",
+      "appid": 289070
+    },
+    {
+      "name": "Red Dead Redemption 2",
+      "appid": 1174180
+    },
+    {
+      "name": "Cyberpunk 2077",
+      "appid": 1091500
+    },
+    {
+      "name": "Hades",
+      "appid": 1145360
+    },
+    {
+      "name": "Hollow Knight",
+      "appid": 367520
+    },
+    {
+      "name": "Monster Hunter: World",
+      "appid": 582010
+    },
+    {
+      "name": "Deep Rock Galactic",
+      "appid": 548430
+    },
+    {
+      "name": "RimWorld",
+      "appid": 294100
+    },
+    {
+      "name": "Phasmophobia",
+      "appid": 739630
+    },
+    {
+      "name": "Valheim",
+      "appid": 892970
+    },
+    {
+      "name": "Left 4 Dead 2",
+      "appid": 550
+    }
+  ]
+}
