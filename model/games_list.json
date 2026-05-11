@@ -1,0 +1,124 @@
+{
+  "games": [
+    {
+      "appid": "1245620",
+      "name": "Elden Ring"
+    },
+    {
+      "appid": "413150",
+      "name": "Stardew Valley"
+    },
+    {
+      "appid": "1091500",
+      "name": "Cyberpunk 2077"
+    },
+    {
+      "appid": "271590",
+      "name": "Grand Theft Auto V"
+    },
+    {
+      "appid": "292030",
+      "name": "The Witcher 3: Wild Hunt"
+    },
+    {
+      "appid": "1172470",
+      "name": "Apex Legends"
+    },
+    {
+      "appid": "730",
+      "name": "Counter-Strike 2"
+    },
+    {
+      "appid": "570",
+      "name": "Dota 2"
+    },
+    {
+      "appid": "578080",
+      "name": "PUBG: BATTLEGROUNDS"
+    },
+    {
+      "appid": "105600",
+      "name": "Terraria"
+    },
+    {
+      "appid": "252950",
+      "name": "Rocket League"
+    },
+    {
+      "appid": "1938090",
+      "name": "Call of Duty"
+    },
+    {
+      "appid": "1151340",
+      "name": "Fallout 4"
+    },
+    {
+      "appid": "22380",
+      "name": "Fallout: New Vegas"
+    },
+    {
+      "appid": "377160",
+      "name": "Fallout 4"
+    },
+    {
+      "appid": "281990",
+      "name": "Stellaris"
+    },
+    {
+      "appid": "394360",
+      "name": "Hearts of Iron IV"
+    },
+    {
+      "appid": "255710",
+      "name": "Cities: Skylines"
+    },
+    {
+      "appid": "1145360",
+      "name": "Hades"
+    },
+    {
+      "appid": "1237970",
+      "name": "Titanfall 2"
+    },
+    {
+      "appid": "1174180",
+      "name": "Red Dead Redemption 2"
+    },
+    {
+      "appid": "230410",
+      "name": "Warframe"
+    },
+    {
+      "appid": "814380",
+      "name": "Sekiro: Shadows Die Twice"
+    },
+    {
+      "appid": "1222670",
+      "name": "The Witcher 3: Wild Hunt \u2013 Complete Edition"
+    },
+    {
+      "appid": "359550",
+      "name": "Tom Clancy's Rainbow Six Siege"
+    },
+    {
+      "appid": "367520",
+      "name": "Hollow Knight"
+    },
+    {
+      "appid": "1868140",
+      "name": "Dave the Diver"
+    },
+    {
+      "appid": "1091500",
+      "name": "Cyberpunk 2077"
+    },
+    {
+      "appid": "2050650",
+      "name": "Resident Evil 4"
+    },
+    {
+      "appid": "1240440",
+      "name": "Halo Infinite"
+    }
+  ]
+}
