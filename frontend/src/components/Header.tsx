@@ -1,4 +1,8 @@
-export default function Header() {
+interface Props {
+  onAddGameClick?: () => void;
+}
+
+export default function Header({ onAddGameClick }: Props) {
   return (
     <header className="app-header">
       <a href="/" className="app-header__logo" style={{ textDecoration: "none" }}>
@@ -23,6 +27,24 @@ export default function Header() {
           <div className="app-header__subtitle">Steam Deal Predictor</div>
         </div>
       </a>
+      {onAddGameClick && (
+        <button 
+          onClick={onAddGameClick}
+          style={{
+            marginLeft: 'auto',
+            background: 'var(--color-primary)',
+            color: '#fff',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '0.9rem'
+          }}
+        >
+          ➕ 새 게임 등록
+        </button>
+      )}
     </header>
   );
 }

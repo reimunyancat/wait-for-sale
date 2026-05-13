@@ -134,4 +134,27 @@ export const triggerDataFetch = async () => {
   return response.data;
 };
 
+// 스팀 상점 검색
+export interface SteamSearchItem {
+  id: number;
+  name: string;
+  tiny_image: string;
+  price?: {
+    final: number;
+    initial: number;
+    currency: string;
+  };
+}
+
+export const searchSteamGames = async (query: string): Promise<SteamSearchItem[]> => {
+  const response = await api.get(`/games/steam-search?q=${encodeURIComponent(query)}`);
+  return response.data.data.items || [];
+};
+
+// 게임 추가
+export const addGame = async (appid: number): Promise<{ success: boolean; message: string; name?: string }> => {
+  const response = await api.post("/games/add", { appid });
+  return response.data;
+};
+
 export default api;

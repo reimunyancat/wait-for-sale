@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import GameList from "./components/GameList";
 import GameDetailPage from "./components/GameDetailPage";
+import AddGameModal from "./components/AddGameModal";
 import type { Game } from "./components/GameCard";
 import {
   fetchAllGames,
@@ -50,6 +51,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [isAddGameModalOpen, setIsAddGameModalOpen] = useState(false);
 
   const loadGames = useCallback(async () => {
     try {
@@ -92,8 +94,13 @@ function App() {
 
   return (
     <div className="app-root">
-      <Header />
+      <Header onAddGameClick={() => setIsAddGameModalOpen(true)} />
       <SearchBar onSearch={handleSearch} />
+      <AddGameModal 
+        isOpen={isAddGameModalOpen} 
+        onClose={() => setIsAddGameModalOpen(false)} 
+        onGameAdded={loadGames} 
+      />
 
       <main className="main-content">
         {loading && (

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import axios from "axios";
-import { saveGameData } from "../services/steamService";
+import { saveGameData, fetchAndSaveSingleGame } from "../services/steamService";
 import { searchGamesByName, getPriceHistory, getAllGames, query } from "../db";
 import { getPredictionCached, refreshAllPredictions } from "../services/predictionService";
 
@@ -14,6 +14,42 @@ router.post("/fetch", async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch game data.", error });
+  }
+});
+
+router.get("/steam-search", async (req: Request, res: Response) => {
+  const { q } = req.query;
+  if (!q || typeof q !== "string") {
+    return res.status(400).json({ success: false, message: "Query parameter 'q' is required." });
+  }
+
+  try {
+    const steamRes = await axios.get(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(q)}&l=korean&cc=kr`);
+    res.status(200).json({ success: true, data: steamRes.data });
+  } catch (error) {
+    console.error("Steam search failed:", error);
+    res.status(500).json({ success: false, message: "Failed to search on Steam." });
+  }
+});
+
+router.post("/add", async (req: Request, res: Response) => {
+  const { appid } = req.body;
+  if (!appid) {
+    return res.status(400).json({ success: false, message: "appid is required." });
+  }
+
+  try {
+    const result = await fetchAndSaveSingleGame(Number(appid));
+    if (result.success) {
+      res.status(200).json({ success: true, message: `Game ${result.name} added successfully.` });
+      // 추가 후 백그라운드에서 예측 캐시 새로고침
+      refreshAllPredictions().catch(console.error);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error("Failed to add game:", error);
+    res.status(500).json({ success: false, message: "Failed to add game." });
   }
 });
 

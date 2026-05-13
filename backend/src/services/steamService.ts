@@ -5,7 +5,7 @@ import { query } from "../db";
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 
-async function saveGameToDb(gameDetails: any) {
+export async function saveGameToDb(gameDetails: any) {
   const game = {
     id: gameDetails.steam_appid,
     name: gameDetails.name,
@@ -163,5 +163,27 @@ async function getSteamAppList(): Promise<{ appid: number; name: string }[]> {
   } catch (error) {
     console.error("스팀 앱 목록을 가져오는데 실패했습니다:", error);
     return [];
+  }
+}
+
+export async function fetchAndSaveSingleGame(appId: number) {
+  try {
+    const steamResponse = await axios.get(
+      `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=kr`
+    );
+    const gameData = steamResponse.data;
+
+    if (gameData && gameData[appId] && gameData[appId].success) {
+      const details = gameData[appId].data;
+      console.log(`- ✅ 상세 정보 가져오기 성공: ${details.name} (Type: ${details.type})`);
+      await saveGameToDb(details);
+      return { success: true, name: details.name };
+    } else {
+      console.log(`- ❌ 앱 ID ${appId}는 유효하지 않거나 정보를 가져올 수 없습니다.`);
+      return { success: false, message: "유효하지 않은 App ID 이거나 Steam에서 정보를 가져올 수 없습니다." };
+    }
+  } catch (error) {
+    console.error(`- ❌ 앱 ID ${appId} 처리 중 오류 발생.`, error);
+    return { success: false, message: "Steam API 호출 중 오류가 발생했습니다." };
   }
 }
