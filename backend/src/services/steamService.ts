@@ -166,6 +166,51 @@ async function getSteamAppList(): Promise<{ appid: number; name: string }[]> {
   }
 }
 
+async function fetchItadHistoryAndSave(appId: string) {
+  const ITAD_API_KEY = process.env.ITAD_API_KEY;
+  if (!ITAD_API_KEY) return;
+
+  try {
+    const lookupRes = await axios.get(`https://api.isthereanydeal.com/games/lookup/v1?key=${ITAD_API_KEY}&appid=${appId}`);
+    if (!lookupRes.data?.found || !lookupRes.data?.game?.id) return;
+    const gid = lookupRes.data.game.id;
+
+    const historyRes = await axios.get(`https://api.isthereanydeal.com/games/history/v2?key=${ITAD_API_KEY}&id=${gid}&country=KR`);
+    const historyData = Array.isArray(historyRes.data) ? historyRes.data : historyRes.data?.data || [];
+
+    const steamHistory = historyData.filter((h: any) => h.shop?.name?.toLowerCase() === 'steam');
+
+    const insertQuery = `
+      INSERT INTO price_history (game_id, price, discount_price, discount_percent, is_on_sale, recorded_date)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `;
+
+    let count = 0;
+    for (const record of steamHistory) {
+      if (!record.deal) continue;
+      
+      const price = record.deal.regular?.amount || 0;
+      const discount_price = record.deal.price?.amount || 0;
+      const cut = record.deal.cut || 0;
+      const is_on_sale = cut > 0;
+      const recorded_date = new Date(record.timestamp);
+
+      await query(insertQuery, [
+        appId,
+        price,
+        discount_price,
+        cut,
+        is_on_sale,
+        recorded_date
+      ]);
+      count++;
+    }
+    console.log(`[DB] ✅ ITAD 과거 가격 히스토리 ${count}건 저장 성공: ${appId}`);
+  } catch (error) {
+    console.error(`[DB] ❌ ITAD 가격 히스토리 수집 실패: ${appId}`, error);
+  }
+}
+
 export async function fetchAndSaveSingleGame(appId: number) {
   try {
     const steamResponse = await axios.get(
@@ -177,6 +222,10 @@ export async function fetchAndSaveSingleGame(appId: number) {
       const details = gameData[appId].data;
       console.log(`- ✅ 상세 정보 가져오기 성공: ${details.name} (Type: ${details.type})`);
       await saveGameToDb(details);
+      
+      // 새 게임 추가 시 과거 히스토리 한 번에 불러오기
+      await fetchItadHistoryAndSave(appId.toString());
+
       return { success: true, name: details.name };
     } else {
       console.log(`- ❌ 앱 ID ${appId}는 유효하지 않거나 정보를 가져올 수 없습니다.`);

@@ -55,7 +55,7 @@ export default function AddGameModal({ isOpen, onClose, onGameAdded }: Props) {
     try {
       const res = await addGame(appid);
       if (res.success) {
-        alert(`${res.name || '게임'}이(가) 추가되었습니다!`);
+        alert(`${res.name ? res.name + '이(가)' : '게임이'} 추가되었습니다!`);
         onGameAdded();
         onClose();
       } else {

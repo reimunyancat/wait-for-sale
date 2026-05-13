@@ -83,7 +83,14 @@ function App() {
   };
 
   if (selectedGameId) {
-    return <GameDetailPage gameId={selectedGameId} onBack={() => setSelectedGameId(null)} />;
+    return <GameDetailPage 
+      gameId={selectedGameId} 
+      onBack={() => setSelectedGameId(null)} 
+      onDeleted={() => {
+        setSelectedGameId(null);
+        loadGames();
+      }}
+    />;
   }
 
   const onSaleGames = games.filter((g) => g.is_on_sale);

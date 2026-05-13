@@ -214,4 +214,26 @@ router.get("/:id/detail", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/:id", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  if (!id) {
+    return res.status(400).json({ success: false, message: "id is required." });
+  }
+
+  try {
+    await query("DELETE FROM price_history WHERE game_id = $1", [id]);
+    await query("DELETE FROM prediction_cache WHERE game_id = $1", [id]);
+    const result = await query("DELETE FROM games WHERE id = $1", [id]);
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Game not found." });
+    }
+
+    res.status(200).json({ success: true, message: "Game deleted successfully." });
+  } catch (error) {
+    console.error("Failed to delete game:", error);
+    res.status(500).json({ success: false, message: "Failed to delete game." });
+  }
+});
+
 export default router;

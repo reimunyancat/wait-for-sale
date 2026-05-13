@@ -157,4 +157,10 @@ export const addGame = async (appid: number): Promise<{ success: boolean; messag
   return response.data;
 };
 
+// 게임 제거
+export const deleteGame = async (gameId: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.delete(`/games/${gameId}`);
+  return response.data;
+};
+
 export default api;

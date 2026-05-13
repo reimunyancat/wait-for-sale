@@ -3,6 +3,7 @@ import {
   fetchGameDetail,
   fetchPriceHistory,
   fetchAllPredictions,
+  deleteGame,
   type GameDetail,
   type PriceHistoryEntry,
   type PredictionCache,
@@ -11,6 +12,7 @@ import {
 interface GameDetailPageProps {
   gameId: string;
   onBack: () => void;
+  onDeleted?: () => void;
 }
 
 // 다음 Steam 대형 세일
@@ -52,6 +54,8 @@ function ProbBar({ prob }: { prob: number }) {
 }
 
 function SvgPriceChart({ history }: { history: PriceHistoryEntry[] }) {
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
   if (!history || history.length <= 1) {
     return (
       <div style={{ color: "#8fa4b8", fontSize: 13, padding: "16px 0", textAlign: "center" }}>
@@ -118,8 +122,29 @@ function SvgPriceChart({ history }: { history: PriceHistoryEntry[] }) {
   const firstDate = recent[0].recorded_date?.slice(0, 10) ?? "";
   const lastDate = recent[recent.length - 1].recorded_date?.slice(0, 10) ?? "";
 
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const viewBoxX = (x / rect.width) * W;
+    
+    if (viewBoxX < PAD.left || viewBoxX > W - PAD.right) {
+      setHoverIndex(null);
+      return;
+    }
+    
+    let closestIdx = Math.round(((viewBoxX - PAD.left) / innerW) * (recent.length - 1));
+    closestIdx = Math.max(0, Math.min(recent.length - 1, closestIdx));
+    setHoverIndex(closestIdx);
+  };
+
   return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
+    <svg 
+      width="100%" 
+      viewBox={`0 0 ${W} ${H}`} 
+      style={{ overflow: "visible", cursor: "crosshair" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setHoverIndex(null)}
+    >
       {/* Grid lines */}
       {yLabels.map((p, i) => {
         const y = yScale(p);
@@ -141,11 +166,51 @@ function SvgPriceChart({ history }: { history: PriceHistoryEntry[] }) {
       {/* X axis dates */}
       <text x={PAD.left} y={H - 2} fontSize={9} fill="#8fa4b8">{firstDate}</text>
       <text x={PAD.left + innerW} y={H - 2} fontSize={9} fill="#8fa4b8" textAnchor="end">{lastDate}</text>
+
+      {/* Hover Line & Tooltip */}
+      {hoverIndex !== null && points[hoverIndex] && (
+        <g>
+          {/* Vertical Line */}
+          <line 
+            x1={points[hoverIndex].x} 
+            y1={PAD.top} 
+            x2={points[hoverIndex].x} 
+            y2={PAD.top + innerH} 
+            stroke="#8fa4b8" 
+            strokeWidth={1} 
+            strokeDasharray="3 3" 
+          />
+          {/* Point Circle */}
+          <circle 
+            cx={points[hoverIndex].x} 
+            cy={points[hoverIndex].y} 
+            r={3} 
+            fill={points[hoverIndex].onSale ? "#a4d007" : "#66c0f4"} 
+          />
+          {/* Tooltip */}
+          {(() => {
+            const pt = points[hoverIndex];
+            const isRightSide = pt.x > W / 2;
+            const tooltipX = isRightSide ? pt.x - 75 : pt.x + 10;
+            const tooltipY = Math.max(PAD.top + 5, Math.min(PAD.top + innerH - 35, pt.y - 15));
+            const dateStr = pt.date?.slice(0, 10) ?? "";
+            const priceStr = Math.round(pt.price).toLocaleString() + " 원";
+            
+            return (
+              <g transform={`translate(${tooltipX}, ${tooltipY})`}>
+                <rect x={0} y={0} width={65} height={28} rx={4} fill="#1a2b3c" stroke="#2a3f55" strokeWidth={1} />
+                <text x={32.5} y={11} fontSize={8} fill="#8fa4b8" textAnchor="middle">{dateStr}</text>
+                <text x={32.5} y={22} fontSize={9} fill="#fff" textAnchor="middle" fontWeight="bold">{priceStr}</text>
+              </g>
+            );
+          })()}
+        </g>
+      )}
     </svg>
   );
 }
 
-export default function GameDetailPage({ gameId, onBack }: GameDetailPageProps) {
+export default function GameDetailPage({ gameId, onBack, onDeleted }: GameDetailPageProps) {
   const [detail, setDetail] = useState<GameDetail | null>(null);
   const [history, setHistory] = useState<PriceHistoryEntry[]>([]);
   const [prediction, setPrediction] = useState<PredictionCache | null>(null);
@@ -175,6 +240,20 @@ export default function GameDetailPage({ gameId, onBack }: GameDetailPageProps) 
       setLoading(false);
     });
   }, [gameId]);
+
+  const handleDelete = async () => {
+    if (!confirm("정말 이 게임을 목록에서 제거하시겠습니까?")) return;
+    try {
+      const res = await deleteGame(gameId);
+      if (res.success) {
+        alert("게임이 성공적으로 제거되었습니다.");
+        if (onDeleted) onDeleted();
+        else onBack();
+      }
+    } catch (err) {
+      alert("게임 제거 중 서버 오류가 발생했습니다.");
+    }
+  };
 
   if (loading) {
     return (
@@ -218,11 +297,33 @@ export default function GameDetailPage({ gameId, onBack }: GameDetailPageProps) 
       <div className="detail-nav">
         <button className="detail-back-btn" onClick={onBack}>← 목록으로</button>
         <span className="detail-nav-title">{detail.name}</span>
+        
+        <button 
+          onClick={handleDelete}
+          style={{
+            marginLeft: 'auto',
+            background: 'rgba(239, 68, 68, 0.15)',
+            color: '#ef4444',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '0.85rem',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
+        >
+          게임 삭제
+        </button>
+
         <a
           className="detail-steam-link"
           href={`https://store.steampowered.com/app/${gameId}`}
           target="_blank"
           rel="noopener noreferrer"
+          style={{ marginLeft: 16 }}
         >
           스팀에서 보기 ↗
         </a>
