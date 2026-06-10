@@ -1,4 +1,33 @@
-node_modules/
-__pycache__/
-venv/
+# 환경 변수
 .env
+.env.local
+.env.*.local
+
+# Node.js
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pth
+optuna.db
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# 빌드 결과물
+build/
+*.js.map.env
