@@ -1,100 +1,134 @@
 {
   "games": [
-    {
-      "name": "Euro Truck Simulator 2",
-      "appid": 227300
-    },
-    {
-      "name": "Counter-Strike 2",
-      "appid": 730
-    },
-    {
-      "name": "Dota 2",
-      "appid": 570
-    },
-    {
-      "name": "Baldur's Gate 3",
-      "appid": 1086940
-    },
-    {
-      "name": "Stardew Valley",
-      "appid": 413150
-    },
-    {
-      "name": "Hearts of Iron IV",
-      "appid": 394360
-    },
-    {
-      "name": "Grand Theft Auto V",
-      "appid": 271590
-    },
-    {
-      "name": "PUBG: BATTLEGROUNDS",
-      "appid": 578080
-    },
-    {
-      "name": "Apex Legends",
-      "appid": 1172470
-    },
-    {
-      "name": "HELLDIVERS 2",
-      "appid": 553850
-    },
-    {
-      "name": "The Witcher 3: Wild Hunt",
-      "appid": 292030
-    },
-    {
-      "name": "ELDEN RING",
-      "appid": 1245620
-    },
-    {
-      "name": "Terraria",
-      "appid": 105600
-    },
-    {
-      "name": "Sid Meier's Civilization VI",
-      "appid": 289070
-    },
-    {
-      "name": "Red Dead Redemption 2",
-      "appid": 1174180
-    },
-    {
-      "name": "Cyberpunk 2077",
-      "appid": 1091500
-    },
-    {
-      "name": "Hades",
-      "appid": 1145360
-    },
-    {
-      "name": "Hollow Knight",
-      "appid": 367520
-    },
-    {
-      "name": "Monster Hunter: World",
-      "appid": 582010
-    },
-    {
-      "name": "Deep Rock Galactic",
-      "appid": 548430
-    },
-    {
-      "name": "RimWorld",
-      "appid": 294100
-    },
-    {
-      "name": "Phasmophobia",
-      "appid": 739630
-    },
-    {
-      "name": "Valheim",
-      "appid": 892970
-    },
-    {
-      "name": "Left 4 Dead 2",
-      "appid": 550
-    }
+    { "name": "Euro Truck Simulator 2", "appid": 227300 },
+    { "name": "Counter-Strike 2", "appid": 730 },
+    { "name": "Dota 2", "appid": 570 },
+    { "name": "Baldur's Gate 3", "appid": 1086940 },
+    { "name": "Stardew Valley", "appid": 413150 },
+    { "name": "Hearts of Iron IV", "appid": 394360 },
+    { "name": "Grand Theft Auto V", "appid": 271590 },
+    { "name": "PUBG: BATTLEGROUNDS", "appid": 578080 },
+    { "name": "Apex Legends", "appid": 1172470 },
+    { "name": "HELLDIVERS 2", "appid": 553850 },
+    { "name": "The Witcher 3: Wild Hunt", "appid": 292030 },
+    { "name": "ELDEN RING", "appid": 1245620 },
+    { "name": "Terraria", "appid": 105600 },
+    { "name": "Sid Meier's Civilization VI", "appid": 289070 },
+    { "name": "Red Dead Redemption 2", "appid": 1174180 },
+    { "name": "Cyberpunk 2077", "appid": 1091500 },
+    { "name": "Hades", "appid": 1145360 },
+    { "name": "Hollow Knight", "appid": 367520 },
+    { "name": "Monster Hunter: World", "appid": 582010 },
+    { "name": "Deep Rock Galactic", "appid": 548430 },
+    { "name": "RimWorld", "appid": 294100 },
+    { "name": "Phasmophobia", "appid": 739630 },
+    { "name": "Valheim", "appid": 892970 },
+    { "name": "Left 4 Dead 2", "appid": 550 },
+
+    { "name": "The Elder Scrolls V: Skyrim Special Edition", "appid": 489830 },
+    { "name": "Fallout 4", "appid": 377160 },
+    { "name": "Dark Souls III", "appid": 374320 },
+    { "name": "Sekiro: Shadows Die Twice", "appid": 814380 },
+    { "name": "Dying Light", "appid": 239140 },
+    { "name": "Dead by Daylight", "appid": 381210 },
+    { "name": "Rust", "appid": 252490 },
+    { "name": "ARK: Survival Evolved", "appid": 346110 },
+    { "name": "No Man's Sky", "appid": 275850 },
+    { "name": "Subnautica", "appid": 264710 },
+    { "name": "Satisfactory", "appid": 526870 },
+    { "name": "Factorio", "appid": 427520 },
+    { "name": "Cities: Skylines", "appid": 255710 },
+    { "name": "Planet Coaster", "appid": 493340 },
+    { "name": "Total War: WARHAMMER III", "appid": 1142710 },
+    { "name": "Stellaris", "appid": 281990 },
+    { "name": "Europa Universalis IV", "appid": 236850 },
+    { "name": "Crusader Kings III", "appid": 1158310 },
+    { "name": "Age of Empires II: Definitive Edition", "appid": 813780 },
+    { "name": "Company of Heroes 2", "appid": 231430 },
+
+    { "name": "DOOM Eternal", "appid": 782330 },
+    { "name": "Resident Evil Village", "appid": 1196590 },
+    { "name": "Resident Evil 2", "appid": 883710 },
+    { "name": "Devil May Cry 5", "appid": 601150 },
+    { "name": "Metal Gear Solid V: The Phantom Pain", "appid": 287700 },
+    { "name": "Hitman 3", "appid": 1659040 },
+    { "name": "Dishonored 2", "appid": 403640 },
+    { "name": "Prey", "appid": 480490 },
+    { "name": "Control", "appid": 870780 },
+    { "name": "Death Stranding", "appid": 1190460 },
+
+    { "name": "Divinity: Original Sin 2", "appid": 435150 },
+    { "name": "Pillars of Eternity II: Deadfire", "appid": 560130 },
+    { "name": "Disco Elysium", "appid": 632470 },
+    { "name": "Persona 5 Royal", "appid": 1687950 },
+    { "name": "NieR:Automata", "appid": 524220 },
+    { "name": "Final Fantasy XV", "appid": 637650 },
+    { "name": "Dragon Quest XI", "appid": 1295510 },
+    { "name": "Octopath Traveler", "appid": 921570 },
+    { "name": "Tales of Arise", "appid": 740130 },
+
+    { "name": "Celeste", "appid": 504230 },
+    { "name": "Cuphead", "appid": 268910 },
+    { "name": "Ori and the Will of the Wisps", "appid": 1057090 },
+    { "name": "Dead Cells", "appid": 588650 },
+    { "name": "Slay the Spire", "appid": 646570 },
+    { "name": "Hades II", "appid": 1145350 },
+    { "name": "Risk of Rain 2", "appid": 632360 },
+    { "name": "Enter the Gungeon", "appid": 311690 },
+    { "name": "Inscryption", "appid": 1092790 },
+    { "name": "Vampire Survivors", "appid": 1794680 },
+
+    { "name": "It Takes Two", "appid": 1426210 },
+    { "name": "A Way Out", "appid": 1222700 },
+    { "name": "Overcooked! 2", "appid": 728880 },
+    { "name": "Fall Guys", "appid": 1097150 },
+    { "name": "Among Us", "appid": 945360 },
+
+    { "name": "Doom (2016)", "appid": 379720 },
+    { "name": "Wolfenstein II: The New Colossus", "appid": 612880 },
+    { "name": "Borderlands 3", "appid": 397540 },
+    { "name": "Far Cry 5", "appid": 552520 },
+    { "name": "Tom Clancy's Rainbow Six Siege", "appid": 359550 },
+
+    { "name": "Horizon Zero Dawn", "appid": 1151640 },
+    { "name": "God of War", "appid": 1593500 },
+    { "name": "Days Gone", "appid": 1259420 },
+    { "name": "Uncharted: Legacy of Thieves Collection", "appid": 1659420 },
+    { "name": "Marvel's Spider-Man Remastered", "appid": 1817070 },
+
+    { "name": "Warhammer: Vermintide 2", "appid": 552500 },
+    { "name": "Payday 2", "appid": 218620 },
+    { "name": "Dying Light 2", "appid": 534380 },
+    { "name": "The Forest", "appid": 242760 },
+    { "name": "Green Hell", "appid": 815370 },
+
+    { "name": "Oxygen Not Included", "appid": 457140 },
+    { "name": "Don't Starve Together", "appid": 322330 },
+    { "name": "Project Zomboid", "appid": 108600 },
+    { "name": "Kenshi", "appid": 233860 },
+    { "name": "Mount & Blade II: Bannerlord", "appid": 261550 },
+
+    { "name": "Yakuza 0", "appid": 638970 },
+    { "name": "Yakuza: Like a Dragon", "appid": 1235140 },
+    { "name": "Sleeping Dogs: Definitive Edition", "appid": 307690 },
+    { "name": "Batman: Arkham Knight", "appid": 208650 },
+    { "name": "Middle-earth: Shadow of War", "appid": 356190 },
+
+    { "name": "Nioh 2", "appid": 1325200 },
+    { "name": "Monster Hunter Rise", "appid": 1446780 },
+    { "name": "Dragon's Dogma: Dark Arisen", "appid": 367500 },
+    { "name": "Armored Core VI", "appid": 1888160 },
+
+    { "name": "Plague Inc: Evolved", "appid": 246620 },
+    { "name": "Prison Architect", "appid": 233450 },
+    { "name": "Kerbal Space Program", "appid": 220200 },
+    { "name": "Tropico 6", "appid": 492720 },
+    { "name": "Frostpunk", "appid": 323190 },
+
+    { "name": "Ori and the Blind Forest", "appid": 387290 },
+    { "name": "A Hat in Time", "appid": 253230 },
+    { "name": "Shovel Knight: Treasure Trove", "appid": 250760 },
+    { "name": "Katana ZERO", "appid": 460950 },
+    { "name": "Hotline Miami 2: Wrong Number", "appid": 274170 }
   ]
 }

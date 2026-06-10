@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
 import gamesRouter from "./routes/games";
 import dotenv from "dotenv";
 import path from "path";
@@ -6,7 +7,9 @@ import { connectDb, initializeDb, DbConfig } from "./db";
 import cron from "node-cron";
 import { saveGameData } from "./services/steamService";
 
-const dotenvResult = dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+const dotenvResult = dotenv.config({
+  path: path.resolve(__dirname, "../../.env"),
+});
 if (dotenvResult.error) {
   console.error("Error loading .env file:", dotenvResult.error);
 }
@@ -16,6 +19,12 @@ const envConfig = dotenvResult.parsed || {};
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  }),
+);
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {

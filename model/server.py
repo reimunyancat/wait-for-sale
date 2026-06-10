@@ -1,102 +1,133 @@
-from fastapi import FastAPI, HTTPException, Query
-import torch
+"""
+model/server.py - FastAPI 예측 서버
+GET /predict?appid=xxx
+"""
+import sys
+import os
+import joblib
 import numpy as np
 from pathlib import Path
+from typing import Optional
 
-# 프로젝트 모듈 임포트
-from .model import SaleProfilerLSTM
-from .data import get_live_game_data
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dotenv import load_dotenv
 
-# --- 기본 설정 ---
+# 모델 디렉토리 기준으로 경로 설정
+MODEL_DIR = Path(__file__).parent
+sys.path.insert(0, str(MODEL_DIR))
+
+load_dotenv(dotenv_path=MODEL_DIR.parent / '.env')
+
+from data import build_realtime_features, FEATURE_NAMES
+from model import SalePredictorXGB
+
 app = FastAPI(
-    title="WaitForSale - Steam Game Sale Predictor",
-    description="특정 Steam 게임의 다음 날 할인 시작 여부를 예측하는 API입니다.",
-    version="0.1.0"
+    title="WaitForSale Prediction API",
+    description="XGBoost 기반 Steam 게임 할인 예측",
+    version="2.0.0",
 )
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 현재 스크립트(server.py)의 위치를 기준으로 모델 파일의 절대 경로를 계산
-# 이렇게 하면 어떤 위치에서 서버를 실행해도 모델을 정확히 찾을 수 있음
-SCRIPT_DIR = Path(__file__).parent
-MODEL_PATH = SCRIPT_DIR / "trained_model.pth"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# --- 전역 변수 ---
-model = None
-model_meta = None
-best_params = None
+# 모델 전역 로드
+_predictor: Optional[SalePredictorXGB] = None
+_meta: Optional[dict] = None
 
-# --- 이벤트 핸들러 ---
-@app.on_event("startup")
-def load_model():
-    """서버 시작 시 모델을 로드합니다."""
-    global model, model_meta, best_params
+
+def get_predictor() -> SalePredictorXGB:
+    global _predictor, _meta
+    if _predictor is None:
+        model_path = MODEL_DIR / 'trained_model.json'
+        meta_path = MODEL_DIR / 'model_meta.pkl'
+        if not model_path.exists():
+            raise RuntimeError("trained_model.json 없음. python train.py를 먼저 실행하세요.")
+        _predictor = SalePredictorXGB()
+        _predictor.load(str(MODEL_DIR))
+        if meta_path.exists():
+            _meta = joblib.load(meta_path)
+    return _predictor
+
+
+class PredictionResponse(BaseModel):
+    appid: str
+    sale_prediction_probability: float
+    is_predicted_to_be_on_sale: bool
+    confidence: str  # "high" | "medium" | "low"
+    message: str
+
+
+def probability_to_confidence(prob: float) -> str:
+    if prob >= 0.7:
+        return "high"
+    elif prob >= 0.4:
+        return "medium"
+    else:
+        return "low"
+
+
+def probability_to_message(prob: float) -> str:
+    pct = int(prob * 100)
+    if prob >= 0.7:
+        return f"{pct}% 확률로 곧 할인 가능성이 높습니다!"
+    elif prob >= 0.4:
+        return f"{pct}% 확률로 할인될 수 있습니다."
+    else:
+        return f"{pct}% 확률 — 당분간 할인 가능성은 낮습니다."
+
+
+@app.get("/predict", response_model=PredictionResponse)
+async def predict(appid: str = Query(..., description="Steam App ID")):
+    """
+    특정 Steam 게임의 할인 예측을 반환합니다.
+    """
     try:
-        checkpoint = torch.load(MODEL_PATH, map_location=device, weights_only=False)
-        
-        model_meta = checkpoint['model_meta']
-        best_params = checkpoint['best_params']
+        predictor = get_predictor()
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
-        model = SaleProfilerLSTM(
-            num_games=model_meta['num_games'],
-            num_devs=model_meta['num_devs'],
-            num_pubs=model_meta['num_pubs'],
-            params=best_params
-        ).to(device)
+    features = build_realtime_features(appid)
+    if features is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"appid={appid}에 대한 데이터를 수집할 수 없습니다. ITAD에 등록된 게임인지 확인하세요."
+        )
 
-        model.load_state_dict(checkpoint['model_state_dict'])
-        model.eval()
-        
-        print(f"--- 모델 로드 완료: {MODEL_PATH} ---")
-        print(f"--- 실행에 사용할 디바이스: {device} ---")
-
-    except FileNotFoundError:
-        print(f"[ERROR] 모델 파일을 찾을 수 없습니다: {MODEL_PATH}")
-        print("먼저 train.py를 실행하여 모델을 학습하고 저장해주세요.")
+    try:
+        prob = float(predictor.predict_proba(features)[0])
     except Exception as e:
-        print(f"[ERROR] 모델 로드 중 오류 발생: {e}")
+        raise HTTPException(status_code=500, detail=f"예측 오류: {e}")
 
-# --- API 엔드포인트 ---
-@app.get("/", summary="API 기본 정보")
-def read_root():
-    return {"message": "Steam 게임 할인 예측 API. /docs 에서 사용법을 확인하세요."}
+    return PredictionResponse(
+        appid=appid,
+        sale_prediction_probability=round(prob, 4),
+        is_predicted_to_be_on_sale=prob >= 0.5,
+        confidence=probability_to_confidence(prob),
+        message=probability_to_message(prob),
+    )
 
 
-@app.post("/predict", summary="게임 할인 예측")
-async def predict_sale(appid: str = Query("413150", description="예측할 게임의 Steam AppID")):
-    """
-    주어진 Steam AppID에 대해 다음 날 할인이 시작될 확률을 예측합니다.
-    
-    - **appid**: 예측을 원하는 게임의 고유 Steam AppID.
-    - **반환값**: 할인 예측 확률과 할인 여부(확률 > 0.5).
-    """
-    if not model or not model_meta:
-        raise HTTPException(status_code=503, detail="모델이 로드되지 않았습니다. 서버 로그를 확인해주세요.")
+@app.get("/health")
+async def health():
+    return {"status": "ok", "model_loaded": _predictor is not None}
 
-    # 1. appid를 기반으로 실시간 예측에 필요한 데이터 준비
-    seq_length = 30 # 훈련 시와 동일한 시퀀스 길이
-    input_data = get_live_game_data(appid=appid, model_meta=model_meta, seq_length=seq_length)
-    
-    if not input_data:
-        raise HTTPException(status_code=404, detail=f"AppID {appid}에 대한 예측 데이터를 생성할 수 없습니다. 유효한 AppID인지 또는 충분한 데이터가 있는지 확인해주세요.")
 
-    # 2. 데이터를 텐서로 변환하고 디바이스에 올리기
-    x, g, dev, pub = input_data
-    
-    # unsqueeze(0)를 통해 배치 차원(1) 추가
-    x_tensor = torch.from_numpy(x).float().unsqueeze(0).to(device) 
-    g_tensor = torch.tensor([g], dtype=torch.long).unsqueeze(0).to(device)
-    dev_tensor = torch.tensor([dev], dtype=torch.long).unsqueeze(0).to(device)
-    pub_tensor = torch.tensor([pub], dtype=torch.long).unsqueeze(0).to(device)
-
-    # 3. 모델 예측
-    with torch.no_grad():
-        logit = model(x_tensor, g_tensor, dev_tensor, pub_tensor)
-        probability = torch.sigmoid(logit).item()
-
-    # 4. 결과 반환
-    is_on_sale_prediction = bool(probability > 0.5)
+@app.get("/")
+async def root():
     return {
-        "appid": appid,
-        "sale_prediction_probability": round(probability, 4),
-        "is_predicted_to_be_on_sale": is_on_sale_prediction,
+        "name": "WaitForSale Prediction API",
+        "version": "2.0.0",
+        "endpoints": ["/predict?appid=<steam_appid>", "/health"],
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001, reload=False)

@@ -7,15 +7,12 @@ interface GameListProps {
 }
 
 export default function GameList({ title, games, isPredictionList = false }: GameListProps) {
-  if (!games || games.length === 0) {
-    return null;
-  }
+  if (!games || games.length === 0) return null;
 
   return (
-    <section className="mb-10">
-      <h2 className="text-2xl font-bold mb-5 text-gray-200">{title}</h2>
-      {/* Denser grid for more compact card layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+    <section className="game-section">
+      <h2 className="game-section__title">{title}</h2>
+      <div className="game-grid">
         {games.map(game => (
           <GameCard key={game.id} game={game} isPrediction={isPredictionList} />
         ))}
